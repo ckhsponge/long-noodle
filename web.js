@@ -1,22 +1,35 @@
 var http = require('http');
 
 var PORT = process.env.PORT || 8000;
-var MAX_MESSAGE_LENGTH = 2048;
 var TOKEN = process.env.TOKEN || 'TOKEN';
+var MAX_MESSAGE_LENGTH = 2048;
+var MAX_CONNECTION_TIME = 30000;
 
-function Connection( response ) {
+function Connection( path, response ) {
+  this.path = path;
   this.response = response;
 }
 Connection.prototype.send = function( message ) {
     return this.response.write( message + '\n' );
+};
+Connection.prototype.close = function() {
+    return this.response.end( "" );
 };
 
 var broadcast = {
   connections: {},
   messages: {},
   add: function( path, response ) {
+    var connection = new Connection( path, response );
     this.connections[ path ] = this.connections[ path ] || [];
-    this.connections[ path ].push( new Connection( response ) );
+    console.log( 'adding to ' + connection.path );
+    this.connections[ path ].push( connection );
+    setTimeout( function() { broadcast.remove( connection); }, MAX_CONNECTION_TIME );
+  },
+  remove: function( connection ) {
+    console.log( 'removing from ' + connection.path );
+    connection.close();
+    this.connections[connection.path].splice( this.connections[connection.path].indexOf(connection), 1 );
   },
   send: function( path, message ) {
     console.log( 'sending for "' + path + '": ' + message );
