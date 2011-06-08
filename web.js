@@ -93,6 +93,7 @@ var server = http.createServer(function (request, response) {
     if( params.token != TOKEN ) {
         response.writeHead( 403, {'Content-Type': 'text/plain'});
         response.end( "not authorized for posting messages without a valid 'token'\n" );
+        return;
     }
     var message = '';
     request.on( 'data', function(data) {
