@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Long Noodle Test</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
+    <script src="./json2.js" type="text/javascript"></script>
+</head>
+<body>
+    <h1>
+        Long Noodle Test
+    </h1>
+    <p>
+        This page uses jquery to long poll a server for message updates. You must have node.js installed.
+    </p>
+    <p>
+        <b>
+            Start the local node.js server by running:
+        </b>
+        <br/>
+        <i>node web.js</i>
+    </p>
+    <p>
+        <b>Run this from terminal to post a text message:</b>
+        <br/>
+        <i>
+            curl 'http://localhost:8000/test_message?token=TOKEN' -d 'your message here'
+        </i>
+    </p>
+    <p>
+        <b>Run this from terminal to post a json message:</b>
+        <br/>
+        <i>
+            curl 'http://localhost:8000/test_message?token=TOKEN&dataType=json' -d '{body: "your message here"}'
+        </i>
+    </p>
+    <p>
+        <b>Messages:</b>
+    </p>
+    <p>
+        <div id="messages"></div>
+    </p>
+    <script type="text/javascript">
+        var url = "http://localhost:8000/test_message";
+        var token = "TOKEN";
+        var version = 0;
+
+        $('#submit').click(function() {
+            $.post( url, $('#text').val());
+            alert('Handler for .click() called.');
+        });
+
+        function nextMessage() {
+                $.ajax( {url: url, dataType: "jsonp", crossDomain: true, data: { version: version }, success: function(data, textStatus, jqXHR) {
+                    //alert('Load was performed. ' + data.version);
+                    if( data ) {
+                        version = data.version + 1;
+                        $('#messages').html(data.version + ': ' + (data.json ? '<i>json:</i> '+JSON.stringify(data.json) : data.body) + '<br/>' + $('#messages').html());
+                    } else {
+                        //alert('No data.');
+                    }
+                    nextMessage();
+                }
+                })
+                //.success(function() { alert("second success"); })
+                .error(function() { alert("error"); }   );
+                //.complete(function() { alert("complete"); });
+        }
+
+        $(document).ready(function() {
+            nextMessage();
+        });
+    </script>
+</body>
+</html>
