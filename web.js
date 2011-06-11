@@ -5,7 +5,7 @@ require('./json2.js');
 var PORT = process.env.PORT || 8000;
 var TOKEN = process.env.TOKEN || 'TOKEN';
 var MAX_MESSAGE_LENGTH = 2048;
-var MAX_CONNECTION_TIME = 30000;
+var MAX_CONNECTION_TIME = 25000;
 
 function Connection( path, response, callback ) {
   this.path = path;

@@ -1,0 +1,2 @@
+heroku addons:add custom_domains
+heroku addons:upgrade logging:expanded
