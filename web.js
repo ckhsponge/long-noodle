@@ -47,12 +47,14 @@ var broadcast = {
     var index = this.connections[connection.path].indexOf(connection);
     if( index >= 0 ) { this.connections[connection.path].splice( index, 1 ); }
   },
-  send: function( path, body, dataType ) {
+  send: function( path, body, dataType, version ) {
     this.messages[ path ] = this.messages[ path ] || { version: 0, body: ''};
     var message = this.messages[ path ];
     message.body = body;
     message.version = message.version + 1;
+    if( version > 0 ) { message.version = version; }
     message.dataType = dataType;
+    message.createdAt = new Date();
     console.log( 'sending for "' + path + ' ' + message.version + '": ' + body );
     this.connections[ path ] = this.connections[ path ] || [];
     for( var i = 0; i < this.connections[ path ].length; ++i ) {
@@ -66,9 +68,9 @@ var broadcast = {
       var body = message.body;
       if( connection.callback ) {
           if( message.dataType == 'json') {
-              body = '{"version":'+message.version+',"json":'+message.body+'}';
+              body = '{"version":'+message.version+',"json":'+message.body+',"createdAt":'+JSON.stringify(message.createdAt)+'}'; 
           } else {
-            body = JSON.stringify({version: message.version, body: message.body});
+            body = JSON.stringify({version: message.version, body: message.body, createdAt: message.createdAt});
           }
       }
       connection.send( body );
@@ -95,18 +97,18 @@ var server = http.createServer(function (request, response) {
         response.end( "not authorized for posting messages without a valid 'token'\n" );
         return;
     }
-    var message = '';
+    var body = '';
     request.on( 'data', function(data) {
-      if( message.length > MAX_MESSAGE_LENGTH ) { return; }
-      message += data.toString();
-      console.log( message );
-      if( message.length > MAX_MESSAGE_LENGTH ) {
+      if( body.length > MAX_MESSAGE_LENGTH ) { return; }
+      body += data.toString();
+      console.log( body );
+      if( body.length > MAX_MESSAGE_LENGTH ) {
         response.writeHead( 406, {'Content-Type': 'text/plain'});
         response.end( "message length exceeds " + MAX_MESSAGE_LENGTH + " bytes\n" );
       }
     });
     request.on( 'end', function() {
-      broadcast.send( path, message, dataType );
+      broadcast.send( path, body, dataType, version );
       response.end('success\n');
       console.log( 'end' );
     });

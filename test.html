@@ -24,14 +24,14 @@
         <b>Run this from terminal to post a text message:</b>
         <br/>
         <i>
-            curl 'http://localhost:8000/test_message?token=TOKEN' -d 'your message here'
+            curl 'http://long-noodle.herokuapp.com/test_message?token=NOODLE' -d 'your message here'
         </i>
     </p>
     <p>
         <b>Run this from terminal to post a json message:</b>
         <br/>
         <i>
-            curl 'http://localhost:8000/test_message?token=TOKEN&dataType=json' -d '{body: "your message here"}'
+            curl 'http://long-noodle.herokuapp.com/test_message?token=NOODLE&dataType=json' -d '{body: "your message here"}'
         </i>
     </p>
     <p>
@@ -41,8 +41,8 @@
         <div id="messages"></div>
     </p>
     <script type="text/javascript">
-        var url = "http://localhost:8000/test_message";
-        var token = "TOKEN";
+        var url = "http://long-noodle.herokuapp.com/test_message";
+        var token = "NOODLE";
         var version = 0;
 
         $('#submit').click(function() {
@@ -59,11 +59,11 @@
                     } else {
                         //alert('No data.');
                     }
-                    nextMessage();
+                    nextMessage(); //wait for next message
                 }
                 })
                 //.success(function() { alert("second success"); })
-                .error(function() { alert("error"); }   );
+                .error(function() { alert("Error. Reload page and try again."); }   );
                 //.complete(function() { alert("complete"); });
         }
 

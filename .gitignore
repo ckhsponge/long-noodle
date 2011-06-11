@@ -2,3 +2,4 @@ node_modules
 .idea
 test_prod.html
 test_noodle.html
+test_local.html
