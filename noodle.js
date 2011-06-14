@@ -2,6 +2,7 @@ function Noodle( _url, _callback ) {
 	this.url = _url;
 	this.callback = _callback;
     this.repeat = true;
+	this.version = 0; //setting version to 0 tells noodle to immediately return the last message if it exists
 }
 Noodle.prototype.poll = function(){
 	var noodle = this;
@@ -25,10 +26,10 @@ Noodle.prototype.poll = function(){
   //.complete(function() { alert("complete"); });
 }
 Noodle.prototype.start = function(){
-	this.version = 0; //setting version to 0 tells noodle to immediately return the last message
     this.poll();
 }
 Noodle.prototype.startWithWait = function(){
+    this.version = null; //clearing the version forces a wait for the next message
     this.poll();
 }
 Noodle.prototype.startSingle = function(){
