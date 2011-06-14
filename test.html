@@ -5,6 +5,7 @@
     <title>Long Noodle Test</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
     <script src="./json2.js" type="text/javascript"></script>
+    <script src="./noodle.js" type="text/javascript"></script>
 </head>
 <body>
     <h1>
@@ -14,24 +15,17 @@
         This page uses jquery to long poll a server for message updates. You must have node.js installed.
     </p>
     <p>
-        <b>
-            Start the local node.js server by running:
-        </b>
-        <br/>
-        <i>node web.js</i>
-    </p>
-    <p>
         <b>Run this from terminal to post a text message:</b>
         <br/>
         <i>
-            curl 'http://long-noodle.herokuapp.com/test_message?token=NOODLE' -d 'your message here'
+            curl '<span class='noodle_url'></span>?token=<span class='noodle_token'></span>' -d 'your message here'
         </i>
     </p>
     <p>
         <b>Run this from terminal to post a json message:</b>
         <br/>
         <i>
-            curl 'http://long-noodle.herokuapp.com/test_message?token=NOODLE&dataType=json' -d '{body: "your message here"}'
+            curl '<span class='noodle_url'></span>?token=<span class='noodle_token'></span>&dataType=json' -d '{body: "your message here"}'
         </i>
     </p>
     <p>
@@ -43,32 +37,22 @@
     <script type="text/javascript">
         var url = "http://long-noodle.herokuapp.com/test_message";
         var token = "NOODLE";
-        var version = 0;
+        $('.noodle_url').html( url );
+        $('.noodle_token').html( token );
 
-        $('#submit').click(function() {
-            $.post( url, $('#text').val());
-            alert('Handler for .click() called.');
-        });
-
-        function nextMessage() {
-                $.ajax( {url: url, dataType: "jsonp", crossDomain: true, data: { version: version }, success: function(data, textStatus, jqXHR) {
-                    //alert('Load was performed. ' + data.version);
-                    if( data ) {
-                        version = data.version + 1;
-                        $('#messages').html(data.version + ': ' + (data.json ? '<i>json:</i> '+JSON.stringify(data.json) : data.body) + '<br/>' + $('#messages').html());
-                    } else {
-                        //alert('No data.');
-                    }
-                    nextMessage(); //wait for next message
-                }
-                })
-                //.success(function() { alert("second success"); })
-                .error(function() { alert("Error. Reload page and try again."); }   );
-                //.complete(function() { alert("complete"); });
+        <!-- create the noodle object and start it -->
+        function startNoodling() {
+            (new Noodle(url, function(data) {
+                $('#messages').html(data.version + ': ' +
+                        (data.json ? '<i>json:</i> '+JSON.stringify(data.json) : data.body) +
+                        ' <b>' + data.createdAt + '</b>' +
+                        '<br/>' + $('#messages').html());
+            })).start();
         }
 
+        <!-- don't start noddling until after the page loads so the spinny stops -->
         $(document).ready(function() {
-            setTimeout( nextMessage, 0.1);
+            setTimeout( startNoodling, 100);
         });
     </script>
 </body>

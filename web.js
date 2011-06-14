@@ -1,4 +1,5 @@
 var http = require('http');
+var fs   = require('fs');
 
 require('./json2.js');
 
@@ -88,8 +89,14 @@ var server = http.createServer(function (request, response) {
   console.log( request.method );
   if( request.method == "GET" ) {
     console.log( "GET " + path);
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-  	broadcast.add( path, version, response, callback );
+    if( ['/test.html', '/json2.js','/noodle.js'].indexOf( path ) >= 0) {
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.write(fs.readFileSync(__dirname + path, 'utf8')); // <--- add this line
+        response.end();
+    } else {
+        response.writeHead(200, {'Content-Type': 'text/plain'});
+  	    broadcast.add( path, version, response, callback );
+    }
   } else {
     console.log( "POST " + path);
     if( params.token != TOKEN ) {
