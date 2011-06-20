@@ -37,8 +37,8 @@ var broadcast = {
     } else {
         //queue connection for next message
         this.connections[ path ] = this.connections[ path ] || [];
-        console.log( 'adding to ' + connection.path );
         this.connections[ path ].push( connection );
+        console.log( 'adding to "' + connection.path + '", ' + this.connections[ path ].length + ' listeners' );
         setTimeout( function() { broadcast.remove( connection); }, MAX_CONNECTION_TIME );
     }
   },
@@ -56,8 +56,8 @@ var broadcast = {
     if( version > 0 ) { message.version = version; }
     message.dataType = dataType;
     message.createdAt = new Date();
-    console.log( 'sending for "' + path + ' ' + message.version + '": ' + body );
     this.connections[ path ] = this.connections[ path ] || [];
+    console.log( 'sending for "' + path + '" ' + message.version + ', ' + this.connections[ path ].length + ' listeners: ' + body );
     for( var i = 0; i < this.connections[ path ].length; ++i ) {
       this.sendToConnection( this.connections[ path ][i], message );
 
