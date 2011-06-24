@@ -1,15 +1,15 @@
-function Noodle( _url, _callback ) {
+function LongNoodle( _url, _callback ) {
 	this.url = _url;
 	this.callback = _callback;
     this.repeat = true;
 	this.version = 0; //setting version to 0 tells noodle to immediately return the last message if it exists
 }
-Noodle.prototype.poll = function(){
+LongNoodle.prototype.poll = function(){
 	var noodle = this;
 	var ajax_callback = function(data) {
       if( noodle.callback ) {
         if (data) {
-          noodle.version = data.version + 1;
+          noodle.version = data.version + 1; //get ready to wait for next version
           noodle.callback( data );
         }
         if (noodle.callback && noodle.repeat) {
@@ -25,18 +25,18 @@ Noodle.prototype.poll = function(){
   .error(function() { alert("Error. Reload page and try again."); }   );
   //.complete(function() { alert("complete"); });
 }
-Noodle.prototype.start = function(){
+LongNoodle.prototype.start = function(){
     this.poll();
 }
-Noodle.prototype.startWithWait = function(){
+LongNoodle.prototype.startWithWait = function(){
     this.version = null; //clearing the version forces a wait for the next message
     this.poll();
 }
-Noodle.prototype.startSingle = function(){
+LongNoodle.prototype.startSingle = function(){
     this.repeat = false;
     this.poll();
 }
 
-Noodle.prototype.stop = function(){
+LongNoodle.prototype.stop = function(){
 	this.callback = null;
 }

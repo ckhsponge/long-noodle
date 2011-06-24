@@ -5,7 +5,7 @@
     <title>Long Noodle Test</title>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js" type="text/javascript"></script>
     <script src="./json2.js" type="text/javascript"></script>
-    <script src="./noodle.js" type="text/javascript"></script>
+    <script src="./long_noodle.js" type="text/javascript"></script>
 </head>
 <body>
     <h1>
@@ -37,12 +37,14 @@
     <script type="text/javascript">
         var url = "http://long-noodle.herokuapp.com/test_message";
         var token = "NOODLE";
+
+        <!-- update the help text above -->
         $('.noodle_url').html( url );
         $('.noodle_token').html( token );
 
         <!-- create the noodle object and start it -->
         function startNoodling() {
-            (new Noodle(url, function(data) {
+            (new LongNoodle(url, function(data) {
                 $('#messages').html(data.version + ': ' +
                         (data.json ? '<i>json:</i> '+JSON.stringify(data.json) : data.body) +
                         ' <b>' + data.createdAt + '</b>' +
