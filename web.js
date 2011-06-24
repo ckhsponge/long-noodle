@@ -1,82 +1,34 @@
+// node.js server for long polling message passing
+// start with:
+// node web.js
+//
+// POST requests
+// -------------
+// the post data is stored for the specified request path
+// a version number is incremented if there is no version request parameter
+// the version number is stored if it is in the request parameter
+// if dataType=json is specified the post data is considered to be valid json e.g. {message:'yomama'}
+//
+// GET requests
+// ------------
+// the connection will be held open until there is a POST for the specified path
+// to wait based on a version number it can be specified e.g. version=99
+// if you request version=99 and the current message version is 50 then the connection will remain open until the next message
+// if you request version=199 and the current message version is 150 then the message will be returned immediately
+// to get the last message sent for the path specify version=0 since the current message is undoubtedly higher
+// if callback=MYMETHOD is specified then the result is wrapped in a js function e.g. MYMETHOD( {body:'yomama', version:1}
+// or MYMETHOD( {json:{method:'yomama'}, version:1}
+// using a callback provides cross site support
+
 var http = require('http');
 var fs   = require('fs');
-
-require('./json2.js');
 
 var PORT = process.env.PORT || 8000;
 var TOKEN = process.env.TOKEN || 'TOKEN';
 var MAX_MESSAGE_LENGTH = 2048;
-var MAX_CONNECTION_TIME = 25000;
 
-function Connection( path, response, callback ) {
-  this.path = path;
-  this.response = response;
-  this.callback = callback;
-}
-Connection.prototype.send = function( body ) {
-    return this.response.end( this.inCallback( body ) );
-};
-Connection.prototype.close = function() {
-    return this.response.end( this.inCallback( '' ) );
-};
-Connection.prototype.inCallback = function( body ) {
-    return this.callback ? this.callback + '(' + body + ');' : body;
-};
-
-var broadcast = {
-  connections: {},
-  messages: {},
-  add: function( path, version, response, callback ) {
-    var connection = new Connection( path, response, callback );
-    //by default the connection will queue and wait for next message
-    //if a message exists and a version is present in the query and the last message version is greater than the query version then send the message immediately
-    if( this.messages[ path ] && version >= 0 && this.messages[ path ].version >= version ) {
-        //send message immediateley
-        console.log( 'sending now ' + this.messages[ path ].version + ',' + version );
-        this.sendToConnection( connection, this.messages[ path ]);
-    } else {
-        //queue connection for next message
-        this.connections[ path ] = this.connections[ path ] || [];
-        this.connections[ path ].push( connection );
-        console.log( 'adding to "' + connection.path + '", ' + this.connections[ path ].length + ' listeners' );
-        setTimeout( function() { broadcast.remove( connection); }, MAX_CONNECTION_TIME );
-    }
-  },
-  remove: function( connection ) {
-    console.log( 'removing from ' + connection.path );
-    connection.close();
-    var index = this.connections[connection.path].indexOf(connection);
-    if( index >= 0 ) { this.connections[connection.path].splice( index, 1 ); }
-  },
-  send: function( path, body, dataType, version ) {
-    this.messages[ path ] = this.messages[ path ] || { version: 0, body: ''};
-    var message = this.messages[ path ];
-    message.body = body;
-    message.version = message.version + 1;
-    if( version > 0 ) { message.version = version; }
-    message.dataType = dataType;
-    message.createdAt = new Date();
-    this.connections[ path ] = this.connections[ path ] || [];
-    console.log( 'sending for "' + path + '" ' + message.version + ', ' + this.connections[ path ].length + ' listeners: ' + body );
-    for( var i = 0; i < this.connections[ path ].length; ++i ) {
-      this.sendToConnection( this.connections[ path ][i], message );
-
-    }
-    this.connections[ path ] = []; //removes all listeners
-  },
-  sendToConnection: function( connection, message ) {
-      connection.response.writeHead(200, {'Content-Type': 'text/plain', 'Version': message.version});
-      var body = message.body;
-      if( connection.callback ) {
-          if( message.dataType == 'json') {
-              body = '{"version":'+message.version+',"json":'+message.body+',"createdAt":'+JSON.stringify(message.createdAt)+'}'; 
-          } else {
-            body = JSON.stringify({version: message.version, body: message.body, createdAt: message.createdAt});
-          }
-      }
-      connection.send( body );
-  }
-}
+require('./json2.js');
+var Broadcast = require('./broadcast.js');
 
 var server = http.createServer(function (request, response) {
   
@@ -86,8 +38,9 @@ var server = http.createServer(function (request, response) {
   var version = parseInt(params.version);
   var callback = params.callback;
   var dataType = params.dataType;
-  console.log( request.method );
+
   if( request.method == "GET" ) {
+    //get the current message for the path or wait for the next one
     console.log( "GET " + path);
     if( ['/test.html', '/json2.js','/noodle.js'].indexOf( path ) >= 0) {
         response.writeHead(200, {'Content-Type': 'text/html'});
@@ -95,9 +48,10 @@ var server = http.createServer(function (request, response) {
         response.end();
     } else {
         response.writeHead(200, {'Content-Type': 'text/plain'});
-  	    broadcast.add( path, version, response, callback );
+  	    Broadcast.add( path, version, response, callback );
     }
   } else {
+    //post data broadcasts to any listeners for the path
     console.log( "POST " + path);
     if( params.token != TOKEN ) {
         response.writeHead( 403, {'Content-Type': 'text/plain'});
@@ -115,7 +69,8 @@ var server = http.createServer(function (request, response) {
       }
     });
     request.on( 'end', function() {
-      broadcast.send( path, body, dataType, version );
+      //once the whole message has been received then broadcast it
+      Broadcast.send( path, body, dataType, version );
       response.end('success\n');
       console.log( 'end' );
     });
