@@ -3,7 +3,10 @@ Long Noodle
 
 Long polling using Node.js
 
-It's easy to set up!
+* [spongetech.wordpress.com](http://spongetech.wordpress.com/2011/06/24/long-noodle-heroku-long-polling-with-node-js-jquery-rails-cross-site/) -- blog article
+* [long-noodle.herokuapp.com/test.html](http://long-noodle.herokuapp.com/test.html) -- example
+
+ It's easy to set up!
 
 First get a heroku account. Then run the below commands.
 
