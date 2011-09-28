@@ -43,8 +43,12 @@ var server = http.createServer(function (request, response) {
     //get the current message for the path or wait for the next one
     console.log( "GET " + path);
     if( ['/test.html', '/json2.js','/long_noodle.js'].indexOf( path ) >= 0) {
-        response.writeHead(200, {'Content-Type': 'text/html'});
-        response.write(fs.readFileSync(__dirname + path, 'utf8')); // <--- add this line
+        if(path === '/test.html'){
+			response.writeHead(200, {'Content-Type': 'text/html'});
+        } else {
+			response.writeHead(200, {'Content-Type': 'text/javascript'});
+		}
+		response.write(fs.readFileSync(__dirname + path, 'utf8')); // <--- add this line
         response.end();
     } else {
         response.writeHead(200, {'Content-Type': 'text/plain'});

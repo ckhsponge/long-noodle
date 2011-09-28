@@ -12,7 +12,7 @@ LongNoodle.prototype.poll = function(){
           noodle.version = data.version + 1; //get ready to wait for next version
           noodle.callback( data );
         }
-        if (noodle.callback && noodle.repeat) {
+        if (noodle.repeat) {
           noodle.poll();
         }
       }
