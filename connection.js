@@ -6,10 +6,22 @@ function _Connection( path, response, callback ) {
   this.callback = callback;
 }
 _Connection.prototype.send = function( body ) {
-    return this.response.end( this.inCallback( body ) );
+    try {
+        return this.response.end( this.inCallback( body ) );
+    }
+    catch(err)
+    {
+        console.log( "SEND ERROR: " + err.name + ": " + err.message );
+    }
 };
 _Connection.prototype.close = function() {
-    return this.response.end( this.inCallback( '' ) );
+    try {
+        return this.response.end( this.inCallback( '' ) );
+    }
+    catch(err)
+    {
+        console.log( "CLOSE ERROR: " + err.name + ": " + err.message );
+    }
 };
 _Connection.prototype.inCallback = function( body ) {
     return this.callback ? this.callback + '(' + body + ');' : body;
